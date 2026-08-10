@@ -12,7 +12,8 @@ import {
   Activity,
   CheckSquare,
   ShieldCheck,
-  Globe
+  Globe,
+  Volume2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewAgentClick }) => {
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'AI Agents Studio', path: '/agents', icon: Bot },
     { label: 'Chat Playground', path: '/playground', icon: Play },
+    { label: 'Speech & Audio Studio', path: '/speech', icon: Volume2 },
     { label: 'Tools Management', path: '/tools', icon: Wrench },
     { label: 'Knowledge Base (RAG)', path: '/knowledge', icon: BookOpen },
     { label: 'Workflow Builder', path: '/workflows', icon: GitFork },

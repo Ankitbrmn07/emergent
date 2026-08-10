@@ -19,6 +19,7 @@ from app.api.v1.api_keys import router as api_keys_router
 from app.api.v1.observability import router as observability_router
 from app.api.v1.evaluations import router as evaluations_router
 from app.api.v1.admin import router as admin_router
+from app.api.v1.speech import router as speech_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -47,6 +48,7 @@ app.include_router(api_keys_router, prefix=settings.API_V1_STR)
 app.include_router(observability_router, prefix=settings.API_V1_STR)
 app.include_router(evaluations_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
+app.include_router(speech_router, prefix=settings.API_V1_STR)
 
 from sqlalchemy import select, text
 
@@ -190,6 +192,37 @@ async def startup_event():
             for tool_id in tool_map.values():
                 db.add(AgentToolConfig(agent_id=or_agent.id, tool_id=tool_id))
             await db.commit()
+
+            # Seed Fish Audio Speech Agent
+            fish_agent_stmt = select(Agent).where(Agent.id == "fish_audio_speech_agent_01")
+            fish_res = await db.execute(fish_agent_stmt)
+            if not fish_res.scalar_one_or_none():
+                fish_agent = Agent(
+                    id="fish_audio_speech_agent_01",
+                    user_id=user.id,
+                    name="Fish Audio Speech Assistant",
+                    description="AI Agent powered by Fish Audio S2.1 Pro (free) via OpenRouter for speech synthesis and text-to-speech workflows.",
+                    avatar="mic-bot",
+                    category="speech_audio",
+                    provider="OpenRouter",
+                    model_name="fish-audio/s2.1-pro-free:free",
+                    temperature=0.7,
+                    max_tokens=4096,
+                    system_instructions="You are a specialized speech & audio assistant powered by Fish Audio S2.1 Pro via OpenRouter. You process audio generation requests and speech synthesis instructions.",
+                    behavior_rules="Provide clear, well-formatted speech outputs.",
+                    response_style="Expressive & Natural",
+                    safety_rules="Follow standard content safety rules.",
+                    permissions=json.dumps({
+                        "READ": "allowed",
+                        "WRITE": "allowed",
+                        "EXECUTE": "allowed",
+                        "DATABASE": "allowed",
+                        "NETWORK": "allowed",
+                        "DEPLOY": "denied"
+                    })
+                )
+                db.add(fish_agent)
+                await db.commit()
             await db.refresh(default_agent)
 
             # Bind all built-in tools to default agent

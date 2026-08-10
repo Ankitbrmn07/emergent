@@ -1,0 +1,13 @@
+# Backend Python Git Ignore Rules
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+.env
+*.db
+*.sqlite
+agent_platform.db
+*.log
+.pytest_cache/

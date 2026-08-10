@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (saved) {
       const parsed = JSON.parse(saved);
       if (!parsed.openrouter_api_key) {
-        parsed.openrouter_api_key = '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';
+        parsed.openrouter_api_key = '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';
       }
       return parsed;
     }
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: 'demo@emergent.ai',
       is_admin: true,
       groq_api_key: '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',
-      openrouter_api_key: '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'
+      openrouter_api_key: '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'
     };
   });
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('access_token'));

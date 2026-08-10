@@ -1,8 +1,13 @@
 import os
-from pydantic_settings import BaseSettings
+from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
+load_dotenv()
+
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     PROJECT_NAME: str = "Buildr AI - Multi-Provider AI Agent Platform"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = "groq-agent-platform-super-secret-jwt-key-2026-buildr"
@@ -11,7 +16,7 @@ class Settings(BaseSettings):
     
     # Provider API Keys
     GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", "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")
-    OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY", "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")
+    OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY", "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")
     DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
     
     # Supported Groq LPU Models
@@ -20,59 +25,60 @@ class Settings(BaseSettings):
             "id": "llama-3.3-70b-versatile",
             "name": "Llama 3.3 70B Versatile",
             "provider": "Groq",
-            "category": "Reasoning & Tool Use",
             "context_window": 128000,
-            "description": "Most intelligent general model on Groq LPU, ideal for reasoning, coding, & tool selection.",
-            "recommended": True,
-            "is_free": True
+            "description": "Flagship 70B model with high reasoning, tool execution, and code generation.",
+            "recommended": True
+        },
+        {
+            "id": "deepseek-r1-distill-llama-70b",
+            "name": "DeepSeek R1 Distill 70B",
+            "provider": "Groq",
+            "context_window": 128000,
+            "description": "State-of-the-art DeepSeek reasoning model for complex math and logic chain-of-thought.",
+            "recommended": True
         },
         {
             "id": "llama-3.1-8b-instant",
             "name": "Llama 3.1 8B Instant",
             "provider": "Groq",
-            "category": "Fast Tool Use",
             "context_window": 128000,
-            "description": "Ultra-fast lightweight model for quick tasks and simple tool executions.",
-            "is_free": True
-        },
-        {
-            "id": "deepseek-r1-distill-llama-70b",
-            "name": "DeepSeek R1 Distill Llama 70B",
-            "provider": "Groq",
-            "category": "Advanced Reasoning",
-            "context_window": 128000,
-            "description": "Specialized reasoning model for complex logic, math, and analytical debugging.",
-            "is_free": True
+            "description": "Ultra-fast sub-second latency model for lightweight classification and tool routing."
         },
         {
             "id": "mixtral-8x7b-32768",
-            "name": "Mixtral 8x7B Instruct",
+            "name": "Mixtral 8x7B MoE",
             "provider": "Groq",
-            "category": "Text & Code",
             "context_window": 32768,
-            "description": "High-throughput Mixture of Experts model.",
-            "is_free": True
+            "description": "High-throughput Mixture-of-Experts architecture for multi-step tasks."
         },
         {
             "id": "gemma2-9b-it",
-            "name": "Gemma 2 9B Instruct",
+            "name": "Gemma 2 9B IT",
             "provider": "Groq",
-            "category": "General Text",
             "context_window": 8192,
-            "description": "Google lightweight instruction-tuned model.",
-            "is_free": True
+            "description": "Google lightweight instruction-tuned model."
         }
     ]
 
-    # Supported OpenRouter Models (Including Free Models & Specialty Routers)
+    # Supported OpenRouter Models
     AVAILABLE_OPENROUTER_MODELS: list[dict] = [
         {
-            "id": "openrouter/free-models-router",
-            "name": "Free Models Router (Auto)",
+            "id": "fish-audio/s2.1-pro-free:free",
+            "name": "Fish Audio: S2.1 Pro Speech (free)",
             "provider": "OpenRouter",
-            "category": "Free Auto Router",
-            "context_window": 200000,
-            "description": "Intelligent OpenRouter endpoint auto-routing requests to available zero-cost models.",
+            "category": "Text to Speech & Audio",
+            "context_window": 32768,
+            "description": "Fish Audio S2.1 Pro speech synthesis & audio model.",
+            "is_free": True,
+            "recommended": True
+        },
+        {
+            "id": "openrouter/free-models-router",
+            "name": "OpenRouter: Free Models Auto-Router",
+            "provider": "OpenRouter",
+            "category": "Auto Router",
+            "context_window": 128000,
+            "description": "Automatically routes requests to the best available free LLM endpoint on OpenRouter.",
             "is_free": True,
             "recommended": True
         },
@@ -215,8 +221,5 @@ class Settings(BaseSettings):
 
     # Database Configuration
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./agent_platform.db")
-
-    class Config:
-        case_sensitive = True
 
 settings = Settings()

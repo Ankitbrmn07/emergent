@@ -16,6 +16,7 @@ import { ApiKeysPage } from './pages/ApiKeys';
 import { ObservabilityPage } from './pages/Observability';
 import { EvaluationsPage } from './pages/Evaluations';
 import { AdminPage } from './pages/Admin';
+import { SpeechStudioPage } from './pages/SpeechStudio';
 
 export function App() {
   return (
@@ -33,6 +34,7 @@ export function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="agents" element={<AgentWizardPage />} />
               <Route path="playground" element={<PlaygroundPage />} />
+              <Route path="speech" element={<SpeechStudioPage />} />
               <Route path="tools" element={<ToolsPage />} />
               <Route path="knowledge" element={<KnowledgeBasePage />} />
               <Route path="workflows" element={<WorkflowBuilderPage />} />

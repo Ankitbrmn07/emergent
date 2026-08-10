@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List, Optional, Dict, Any
 from app.core.database import get_db
-from app.models.all_models import Conversation, Message, Agent, Tool, AgentToolConfig, AgentKnowledgeBase, DocumentChunk, Document, AgentExecution, ToolExecution, ApprovalRequest
+from app.models.all_models import User, Conversation, Message, Agent, Tool, AgentToolConfig, AgentKnowledgeBase, DocumentChunk, Document, AgentExecution, ToolExecution, ApprovalRequest
 from app.services.agent_runtime import AgentRuntimeService
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])

@@ -1,36 +1,49 @@
-# Byte-compiled / optimized / DLL files
+# ==========================================
+# BuildrAI SaaS Platform — Git Ignore Rules
+# ==========================================
+
+# Environment Files & API Key Credentials
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!.env.example
+
+# Python Environment & Bytecode
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Python Virtual Environments
+*.so
+.Python
 backend/venv/
+backend/env/
 venv/
 env/
 ENV/
 env.bak/
 venv.bak/
+.venv/
 
-# Environment variables & Secret Keys
-.env
-.env.local
-.env.*.local
-*.env
-
-# SQLite & Local Database Files
+# SQLite & Local Data Stores
 *.db
 *.sqlite
 *.sqlite3
 agent_platform.db
+backend/agent_platform.db
 
-# Node.js & Frontend dependencies
+# Node.js & Dependencies
 node_modules/
 frontend/node_modules/
-/.pnp
+.pnp
 .pnp.js
+.yarn/
+package-lock.json.bak
 
-# Build outputs
+# Production Build Outputs
 dist/
+dist-ssr/
 build/
 frontend/dist/
 /.next/
@@ -38,22 +51,38 @@ frontend/dist/
 
 # Logs & Debugging
 *.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
 # Testing & Coverage
 /coverage
 .pytest_cache/
 .coverage
 htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# Editor & OS files
+# IDE & System Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 *.pem
 *.tsbuildinfo

@@ -10,7 +10,8 @@ import {
   ShieldAlert,
   Activity,
   Copy,
-  Check
+  Check,
+  Volume2
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Agent, Conversation, Message, ExecutionInspector } from '../types';
@@ -133,6 +134,15 @@ export const PlaygroundPage: React.FC = () => {
       ]);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSpeakSpeech = (text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
     }
   };
 
@@ -302,13 +312,22 @@ export const PlaygroundPage: React.FC = () => {
                     {m.content}
 
                     {m.role === 'assistant' && (
-                      <button
-                        onClick={() => handleCopyText(m.id, m.content)}
-                        className="absolute top-2 right-2 p-1 rounded bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 opacity-0 group-hover:opacity-100 hover:text-slate-900 dark:hover:text-white transition-opacity border border-slate-200 dark:border-slate-700"
-                        title="Copy message"
-                      >
-                        {copiedId === m.id ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                      </button>
+                      <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleSpeakSpeech(m.content)}
+                          className="p-1 rounded bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 border border-slate-200 dark:border-slate-700"
+                          title="Listen with Fish Audio Speech S2.1"
+                        >
+                          <Volume2 className="w-3 h-3 text-purple-500" />
+                        </button>
+                        <button
+                          onClick={() => handleCopyText(m.id, m.content)}
+                          className="p-1 rounded bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700"
+                          title="Copy message"
+                        >
+                          {copiedId === m.id ? <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        </button>
+                      </div>
                     )}
                   </div>
 
