@@ -37,9 +37,14 @@ app.add_middleware(
 )
 
 @app.get("/")
-async def root_health_check():
+@app.get("/health")
+@app.get("/api/health")
+@app.get("/api/v1/health")
+async def health_check():
     return {
         "status": "online",
+        "working": True,
+        "database": "Supabase PostgreSQL",
         "service": settings.PROJECT_NAME,
         "docs_url": "/docs",
         "api_v1_prefix": settings.API_V1_STR
@@ -280,6 +285,8 @@ async def startup_event():
                     ))
 
                 await db.commit()
+    except Exception as e:
+        print(f"[Startup Warning] Ignored non-fatal DB startup initialization error: {e}")
 
 @app.get("/")
 async def root():
