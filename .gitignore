@@ -1,36 +1,59 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-# dependencies
-/node_modules
+# Python Virtual Environments
+backend/venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment variables & Secret Keys
+.env
+.env.local
+.env.*.local
+*.env
+
+# SQLite & Local Database Files
+*.db
+*.sqlite
+*.sqlite3
+agent_platform.db
+
+# Node.js & Frontend dependencies
+node_modules/
+frontend/node_modules/
 /.pnp
 .pnp.js
 
-# testing
-/coverage
-
-# next.js
+# Build outputs
+dist/
+build/
+frontend/dist/
 /.next/
 /out/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs & Debugging
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# local env files
-.env*.local
-.env
+# Testing & Coverage
+/coverage
+.pytest_cache/
+.coverage
+htmlcov/
 
-# vercel
-.vercel
-
-# typescript
+# Editor & OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*.pem
 *.tsbuildinfo
-next-env.d.ts
