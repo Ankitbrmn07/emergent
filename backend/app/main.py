@@ -97,11 +97,15 @@ async def startup_event():
                 email="demo@emergent.ai",
                 name="Alex Developer",
                 hashed_password=get_password_hash("password123"),
-                is_admin=True
+                is_admin=True,
+                groq_api_key="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"
             )
             db.add(user)
             await db.commit()
             await db.refresh(user)
+        elif not user.groq_api_key:
+            user.groq_api_key = "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"
+            await db.commit()
 
         # Seed Default "Developer Assistant" Agent (Groq powered)
         a_stmt = select(Agent).where(Agent.name == "Developer Assistant")

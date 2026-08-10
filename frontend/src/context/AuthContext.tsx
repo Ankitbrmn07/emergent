@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('user_profile');
-    return saved ? JSON.parse(saved) : { id: 'default_user', name: 'Alex Developer', email: 'demo@emergent.ai', is_admin: true };
+    return saved ? JSON.parse(saved) : { id: 'default_user', name: 'Alex Developer', email: 'demo@emergent.ai', is_admin: true, groq_api_key: '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' };
   });
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(false);

@@ -13,7 +13,7 @@ export const AppLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F17] flex flex-col text-slate-100">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#0B0F17] flex flex-col text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <Navbar onOpenGroqModal={() => setGroqModalOpen(true)} />
       <div className="flex flex-1">
         <Sidebar onNewAgentClick={handleNewAgent} />

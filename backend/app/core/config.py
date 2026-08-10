@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Groq API Configuration
-    GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", "")
+    GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", "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")
     DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
     
     # Supported Groq Models
