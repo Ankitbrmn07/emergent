@@ -63,144 +63,145 @@ from sqlalchemy import select, text
 
 @app.on_event("startup")
 async def startup_event():
-    # 1. Initialize Database Schemas
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        try:
-            await conn.execute(text("ALTER TABLE users ADD COLUMN openrouter_api_key TEXT;"))
-        except Exception:
-            pass
+    try:
+        # 1. Initialize Database Schemas
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+            try:
+                await conn.execute(text("ALTER TABLE users ADD COLUMN openrouter_api_key TEXT;"))
+            except Exception:
+                pass
 
-    # 2. Seed Default Built-in Tools & Default Demo Agent
-    async with AsyncSessionLocal() as db:
-        # Seed Built-in Tools
-        builtin_tools_data = [
-            {"name": "web_search", "display_name": "Web Search", "description": "Search documentation, web pages, and developer guides.", "category": "search"},
-            {"name": "calculator", "display_name": "Math Calculator", "description": "Perform exact mathematical operations and logical evaluations.", "category": "utility"},
-            {"name": "date_time", "display_name": "Date & Time", "description": "Get current UTC timestamp and calendar metrics.", "category": "utility"},
-            {"name": "file_reader", "display_name": "File Reader", "description": "Read file contents and code snippet files.", "category": "filesystem"},
-            {"name": "file_writer", "display_name": "File Writer", "description": "Write code files or output reports to disk.", "category": "filesystem"},
-            {"name": "json_parser", "display_name": "JSON Parser", "description": "Validate and extract JSON key-value schemas.", "category": "utility"},
-            {"name": "http_request", "display_name": "HTTP Request", "description": "Execute external API GET/POST requests.", "category": "network"},
-            {"name": "db_query", "display_name": "Database Query", "description": "Execute SQL queries against databases.", "category": "database"},
-            {"name": "code_execution", "display_name": "Code Execution", "description": "Run Python code snippets in a safe isolated environment.", "category": "code"}
-        ]
+        # 2. Seed Default Built-in Tools & Default Demo Agent
+        async with AsyncSessionLocal() as db:
+            # Seed Built-in Tools
+            builtin_tools_data = [
+                {"name": "web_search", "display_name": "Web Search", "description": "Search documentation, web pages, and developer guides.", "category": "search"},
+                {"name": "calculator", "display_name": "Math Calculator", "description": "Perform exact mathematical operations and logical evaluations.", "category": "utility"},
+                {"name": "date_time", "display_name": "Date & Time", "description": "Get current UTC timestamp and calendar metrics.", "category": "utility"},
+                {"name": "file_reader", "display_name": "File Reader", "description": "Read file contents and code snippet files.", "category": "filesystem"},
+                {"name": "file_writer", "display_name": "File Writer", "description": "Write code files or output reports to disk.", "category": "filesystem"},
+                {"name": "json_parser", "display_name": "JSON Parser", "description": "Validate and extract JSON key-value schemas.", "category": "utility"},
+                {"name": "http_request", "display_name": "HTTP Request", "description": "Execute external API GET/POST requests.", "category": "network"},
+                {"name": "db_query", "display_name": "Database Query", "description": "Execute SQL queries against databases.", "category": "database"},
+                {"name": "code_execution", "display_name": "Code Execution", "description": "Run Python code snippets in a safe isolated environment.", "category": "code"}
+            ]
 
-        tool_map = {}
-        for t_data in builtin_tools_data:
-            stmt = select(Tool).where(Tool.name == t_data["name"])
-            res = await db.execute(stmt)
-            t_obj = res.scalar_one_or_none()
-            if not t_obj:
-                t_obj = Tool(
-                    name=t_data["name"],
-                    display_name=t_data["display_name"],
-                    description=t_data["description"],
-                    is_builtin=True,
-                    category=t_data["category"]
+            tool_map = {}
+            for t_data in builtin_tools_data:
+                stmt = select(Tool).where(Tool.name == t_data["name"])
+                res = await db.execute(stmt)
+                t_obj = res.scalar_one_or_none()
+                if not t_obj:
+                    t_obj = Tool(
+                        name=t_data["name"],
+                        display_name=t_data["display_name"],
+                        description=t_data["description"],
+                        is_builtin=True,
+                        category=t_data["category"]
+                    )
+                    db.add(t_obj)
+                    await db.commit()
+                    await db.refresh(t_obj)
+                tool_map[t_data["name"]] = t_obj.id
+
+            # Seed Default User
+            u_stmt = select(User).where(User.email == "demo@emergent.ai")
+            u_res = await db.execute(u_stmt)
+            user = u_res.scalar_one_or_none()
+            if not user:
+                user = User(
+                    id="default_user",
+                    email="demo@emergent.ai",
+                    name="Alex Developer",
+                    hashed_password=get_password_hash("password123"),
+                    is_admin=True,
+                    groq_api_key="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",
+                    openrouter_api_key="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"
                 )
-                db.add(t_obj)
+                db.add(user)
                 await db.commit()
-                await db.refresh(t_obj)
-            tool_map[t_data["name"]] = t_obj.id
+                await db.refresh(user)
+            else:
+                if not user.groq_api_key:
+                    user.groq_api_key = "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"
+                if not user.openrouter_api_key:
+                    user.openrouter_api_key = "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"
+                await db.commit()
 
-        # Seed Default User
-        u_stmt = select(User).where(User.email == "demo@emergent.ai")
-        u_res = await db.execute(u_stmt)
-        user = u_res.scalar_one_or_none()
-        if not user:
-            user = User(
-                id="default_user",
-                email="demo@emergent.ai",
-                name="Alex Developer",
-                hashed_password=get_password_hash("password123"),
-                is_admin=True,
-                groq_api_key="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",
-                openrouter_api_key="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"
-            )
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
-        else:
-            if not user.groq_api_key:
-                user.groq_api_key = "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"
-            if not user.openrouter_api_key:
-                user.openrouter_api_key = "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"
-            await db.commit()
+            # Seed Default "Developer Assistant" Agent (Groq powered)
+            a_stmt = select(Agent).where(Agent.name == "Developer Assistant")
+            a_res = await db.execute(a_stmt)
+            default_agent = a_res.scalar_one_or_none()
+            if not default_agent:
+                default_agent = Agent(
+                    id="dev_assistant_agent_01",
+                    user_id=user.id,
+                    name="Developer Assistant",
+                    description="AI agent that helps developers analyze, debug, write code, and search documentation.",
+                    avatar="code-bot",
+                    category="developer",
+                    provider="Groq",
+                    model_name="llama-3.3-70b-versatile",
+                    temperature=0.7,
+                    max_tokens=4096,
+                    system_instructions="You are a professional software development assistant powered by Groq's LPU Llama 3.3 70B model. Analyze user requests carefully, choose the appropriate tools (Web Search, Code Execution, Math Calculator, File Reader), explain errors clearly, and maintain high code quality.",
+                    behavior_rules="Always test code snippets mentally or with tools before providing answers. Ask for approval before writing files or deleting databases.",
+                    response_style="Professional & Concise",
+                    safety_rules="Never perform destructive system commands without human approval.",
+                    permissions=json.dumps({
+                        "READ": "allowed",
+                        "WRITE": "approval_required",
+                        "EXECUTE": "allowed",
+                        "DATABASE": "approval_required",
+                        "NETWORK": "allowed",
+                        "DEPLOY": "denied"
+                    })
+                )
+                db.add(default_agent)
+                await db.commit()
+                await db.refresh(default_agent)
 
-        # Seed Default "Developer Assistant" Agent (Groq powered)
-        a_stmt = select(Agent).where(Agent.name == "Developer Assistant")
-        a_res = await db.execute(a_stmt)
-        default_agent = a_res.scalar_one_or_none()
-        if not default_agent:
-            default_agent = Agent(
-                id="dev_assistant_agent_01",
-                user_id=user.id,
-                name="Developer Assistant",
-                description="AI agent that helps developers analyze, debug, write code, and search documentation.",
-                avatar="code-bot",
-                category="developer",
-                provider="Groq",
-                model_name="llama-3.3-70b-versatile",
-                temperature=0.7,
-                max_tokens=4096,
-                system_instructions="You are a professional software development assistant powered by Groq's LPU Llama 3.3 70B model. Analyze user requests carefully, choose the appropriate tools (Web Search, Code Execution, Math Calculator, File Reader), explain errors clearly, and maintain high code quality.",
-                behavior_rules="Always test code snippets mentally or with tools before providing answers. Ask for approval before writing files or deleting databases.",
-                response_style="Professional & Concise",
-                safety_rules="Never perform destructive system commands without human approval.",
-                permissions=json.dumps({
-                    "READ": "allowed",
-                    "WRITE": "approval_required",
-                    "EXECUTE": "allowed",
-                    "DATABASE": "approval_required",
-                    "NETWORK": "allowed",
-                    "DEPLOY": "denied"
-                })
-            )
-            db.add(default_agent)
-            await db.commit()
-            await db.refresh(default_agent)
+                for tool_id in tool_map.values():
+                    db.add(AgentToolConfig(agent_id=default_agent.id, tool_id=tool_id))
+                await db.commit()
 
-            for tool_id in tool_map.values():
-                db.add(AgentToolConfig(agent_id=default_agent.id, tool_id=tool_id))
-            await db.commit()
+            # Seed Default "OpenRouter Nemotron Agent" (OpenRouter powered)
+            or_stmt = select(Agent).where(Agent.name == "OpenRouter Nemotron Ultra")
+            or_res = await db.execute(or_stmt)
+            or_agent = or_res.scalar_one_or_none()
+            if not or_agent:
+                or_agent = Agent(
+                    id="openrouter_nemotron_agent_02",
+                    user_id=user.id,
+                    name="OpenRouter Nemotron Ultra",
+                    description="AI Agent powered by NVIDIA Nemotron 3 Ultra (free) via OpenRouter Network with 1,000,000 token context window.",
+                    avatar="brain-bot",
+                    category="researcher",
+                    provider="OpenRouter",
+                    model_name="nvidia/nemotron-3-ultra:free",
+                    temperature=0.7,
+                    max_tokens=4096,
+                    system_instructions="You are a research & analysis agent powered by NVIDIA Nemotron 3 Ultra via OpenRouter. You specialize in deep reasoning, multi-document context analysis, web search, and tool execution.",
+                    behavior_rules="Provide thorough structured answers using markdown formatting.",
+                    response_style="Detailed & Analytical",
+                    safety_rules="Maintain safety guidelines.",
+                    permissions=json.dumps({
+                        "READ": "allowed",
+                        "WRITE": "approval_required",
+                        "EXECUTE": "allowed",
+                        "DATABASE": "approval_required",
+                        "NETWORK": "allowed",
+                        "DEPLOY": "denied"
+                    })
+                )
+                db.add(or_agent)
+                await db.commit()
+                await db.refresh(or_agent)
 
-        # Seed Default "OpenRouter Nemotron Agent" (OpenRouter powered)
-        or_stmt = select(Agent).where(Agent.name == "OpenRouter Nemotron Ultra")
-        or_res = await db.execute(or_stmt)
-        or_agent = or_res.scalar_one_or_none()
-        if not or_agent:
-            or_agent = Agent(
-                id="openrouter_nemotron_agent_02",
-                user_id=user.id,
-                name="OpenRouter Nemotron Ultra",
-                description="AI Agent powered by NVIDIA Nemotron 3 Ultra (free) via OpenRouter Network with 1,000,000 token context window.",
-                avatar="brain-bot",
-                category="researcher",
-                provider="OpenRouter",
-                model_name="nvidia/nemotron-3-ultra:free",
-                temperature=0.7,
-                max_tokens=4096,
-                system_instructions="You are a research & analysis agent powered by NVIDIA Nemotron 3 Ultra via OpenRouter. You specialize in deep reasoning, multi-document context analysis, web search, and tool execution.",
-                behavior_rules="Provide thorough structured answers using markdown formatting.",
-                response_style="Detailed & Analytical",
-                safety_rules="Maintain safety guidelines.",
-                permissions=json.dumps({
-                    "READ": "allowed",
-                    "WRITE": "approval_required",
-                    "EXECUTE": "allowed",
-                    "DATABASE": "approval_required",
-                    "NETWORK": "allowed",
-                    "DEPLOY": "denied"
-                })
-            )
-            db.add(or_agent)
-            await db.commit()
-            await db.refresh(or_agent)
-
-            for tool_id in tool_map.values():
-                db.add(AgentToolConfig(agent_id=or_agent.id, tool_id=tool_id))
-            await db.commit()
+                for tool_id in tool_map.values():
+                    db.add(AgentToolConfig(agent_id=or_agent.id, tool_id=tool_id))
+                await db.commit()
 
             # Seed Fish Audio Speech Agent
             fish_agent_stmt = select(Agent).where(Agent.id == "fish_audio_speech_agent_01")

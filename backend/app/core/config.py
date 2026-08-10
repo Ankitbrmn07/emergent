@@ -239,7 +239,7 @@ class Settings(BaseSettings):
         }
     ]
 
-    # Database Configuration
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./agent_platform.db")
+    # Database Configuration (Default: Supabase PostgreSQL)
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres.yrhykpojdsehesmwhuqk:94VgnJAkECwGZz04@aws-0-us-east-1.pooler.supabase.com:5432/postgres")
 
 settings = Settings()
