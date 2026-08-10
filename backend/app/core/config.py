@@ -17,10 +17,19 @@ class Settings(BaseSettings):
     # Provider API Keys
     GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", "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")
     OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY", "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")
-    DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
+    DEFAULT_MODEL: str = "openai/gpt-oss-120b"
     
-    # Supported Groq LPU Models
+    # Supported Groq LPU Models (Default: GPT-OSS 120B)
     AVAILABLE_GROQ_MODELS: list[dict] = [
+        {
+            "id": "openai/gpt-oss-120b",
+            "name": "OpenAI: GPT-OSS 120B (Groq Engine)",
+            "provider": "Groq",
+            "context_window": 128000,
+            "description": "Flagship 120B open reasoning model executing on ultra-low latency Groq LPUs.",
+            "recommended": True,
+            "is_default": True
+        },
         {
             "id": "llama-3.3-70b-versatile",
             "name": "Llama 3.3 70B Versatile",
@@ -60,15 +69,26 @@ class Settings(BaseSettings):
         }
     ]
 
-    # Supported OpenRouter Models
+    # Supported OpenRouter Models (Default: Free Models Router & Fish Audio)
     AVAILABLE_OPENROUTER_MODELS: list[dict] = [
+        {
+            "id": "openrouter/free-models-router",
+            "name": "OpenRouter: Free Models Auto-Router",
+            "provider": "OpenRouter",
+            "category": "Auto Router & Reasoning",
+            "context_window": 200000,
+            "description": "Automatically routes requests to the best available free LLM endpoint on OpenRouter.",
+            "is_free": True,
+            "recommended": True,
+            "is_default": True
+        },
         {
             "id": "fish-audio/s2.1-pro-free:free",
             "name": "Fish Audio: S2.1 Pro Speech (free)",
             "provider": "OpenRouter",
             "category": "Text to Speech & Audio",
             "context_window": 32768,
-            "description": "Fish Audio S2.1 Pro speech synthesis & audio model.",
+            "description": "Fish Audio S2.1 Pro multilingual speech synthesis & audio model.",
             "is_free": True,
             "recommended": True
         },

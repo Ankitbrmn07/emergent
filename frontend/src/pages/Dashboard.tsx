@@ -10,7 +10,8 @@ import {
   Play,
   ArrowUpRight,
   TrendingUp,
-  Cpu
+  Cpu,
+  Edit3
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Agent } from '../types';
@@ -183,15 +184,25 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800">
                   <div className="flex items-center space-x-1 text-orange-600 dark:text-orange-400 font-mono font-semibold">
                     <Cpu className="w-3 h-3" />
-                    <span>{agent.model_name}</span>
+                    <span className="truncate max-w-[110px]">{agent.model_name}</span>
                   </div>
-                  <button
-                    onClick={() => navigate(`/playground?agent=${agent.id}`)}
-                    className="px-3 py-1.5 rounded-lg bg-purple-600/15 border border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-600/25 font-medium flex items-center space-x-1 transition-all"
-                  >
-                    <Play className="w-3 h-3 fill-purple-600 dark:fill-purple-300 text-purple-600 dark:text-purple-300" />
-                    <span>Test Playground</span>
-                  </button>
+                  <div className="flex items-center space-x-1.5">
+                    <button
+                      onClick={() => navigate(`/agents?edit_id=${agent.id}`)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 font-medium flex items-center space-x-1 transition-all"
+                      title="Edit Model, Persona & Instructions"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                      <span>Edit Agent</span>
+                    </button>
+                    <button
+                      onClick={() => navigate(`/playground?agent=${agent.id}`)}
+                      className="px-3 py-1.5 rounded-lg bg-purple-600/15 border border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-600/25 font-medium flex items-center space-x-1 transition-all"
+                    >
+                      <Play className="w-3 h-3 fill-purple-600 dark:fill-purple-300 text-purple-600 dark:text-purple-300" />
+                      <span>Test</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

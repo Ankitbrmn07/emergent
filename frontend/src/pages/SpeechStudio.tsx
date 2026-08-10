@@ -23,7 +23,7 @@ export const SpeechStudioPage: React.FC = () => {
   const [textInput, setTextInput] = useState<string>(
     "Welcome to BuildrAI Agent Studio! Powered by Fish Audio S2.1 Pro on the OpenRouter network, our AI agents can synthesize expressive speech, generate voice responses, and execute complex workflows in real time."
   );
-  const [selectedVoice, setSelectedVoice] = useState<string>('en-US-expressive');
+  const [selectedVoice, setSelectedVoice] = useState<string>('hi-IN-expressive');
   const [speed, setSpeed] = useState<number>(1.0);
   const [pitch, setPitch] = useState<number>(1.0);
   const [emotion, setEmotion] = useState<string>('Natural');
@@ -34,18 +34,23 @@ export const SpeechStudioPage: React.FC = () => {
   const [speechResult, setSpeechResult] = useState<any>(null);
 
   const voices = [
+    { id: 'hi-IN-expressive', name: 'Fish Voice — Hindi Expressive (हिन्दी)', language: 'Hindi', desc: 'प्राकृतिक और स्पष्ट हिंदी आवाज' },
+    { id: 'pa-IN-studio', name: 'Fish Voice — Punjabi Studio (ਪੰਜਾਬੀ)', language: 'Punjabi', desc: 'ਸ਼ੁੱਧ ਅਤੇ ਭਾਵਪੂਰਤ ਪੰਜਾਬੀ ਆਵਾਜ਼' },
+    { id: 'hne-IN-deshi', name: 'Fish Voice — Haryanvi Desi Accent (हरियाणवी)', language: 'Haryanvi', desc: 'देसी हरियाणवी बोली और एक्सेंट' },
+    { id: 'ur-PK-narrator', name: 'Fish Voice — Urdu Classic Narrator (اردو)', language: 'Urdu', desc: 'شائستہ اور روانی والی اردو آواز' },
+    { id: 'ar-SA-orpheus', name: 'Fish Voice — Arabic Saudi Orpheus (العربية)', language: 'Arabic', desc: 'صوت عربي سعودي فصيح ونقي' },
     { id: 'en-US-expressive', name: 'Fish Voice — English Expressive (Female)', language: 'English', desc: 'Warm, engaging tone for AI assistants' },
-    { id: 'en-US-professional', name: 'Fish Voice — Studio Narrator (Male)', language: 'English', desc: 'Authoritative, clear broadcast tone' },
-    { id: 'en-US-conversational', name: 'Fish Voice — Casual Assistant (Neutral)', language: 'English', desc: 'Friendly everyday conversational cadence' },
-    { id: 'es-ES-natural', name: 'Fish Voice — Spanish Natural (Female)', language: 'Spanish', desc: 'Fluido y natural para asistentes de voz' },
-    { id: 'fr-FR-studio', name: 'Fish Voice — French Studio (Male)', language: 'French', desc: 'Voix claire et professionnelle' }
+    { id: 'en-US-professional', name: 'Fish Voice — English Studio Narrator (Male)', language: 'English', desc: 'Authoritative, clear broadcast tone' },
+    { id: 'es-ES-natural', name: 'Fish Voice — Spanish Natural (Female)', language: 'Spanish', desc: 'Fluido y natural para asistentes de voz' }
   ];
 
   const presets = [
-    { title: "Platform Greeting", text: "Welcome to BuildrAI Agent Studio! Create, test, and deploy intelligent AI agents with Groq and OpenRouter models." },
-    { title: "Developer Pitch", text: "BuildrAI provides sub-second agentic inference, RAG vector knowledge bases, visual DAG workflows, and REST API publishing." },
-    { title: "Security Notice", text: "Human approval gate triggered. Action 'Database Write' requires administrative authorization before proceeding." },
-    { title: "Podcast Intro", text: "Welcome back to Tech AI Weekly. Today we explore the ultra-low latency LPU engine and Fish Audio speech synthesis." }
+    { title: "Hindi (हिन्दी)", text: "नमस्ते! बिल्डर एआई स्टूडियो में आपका स्वागत है। आप ग्रोक और ओपनराउटर मॉडल से अपने एआई एजेंट बना सकते हैं।" },
+    { title: "Punjabi (ਪੰਜਾਬੀ)", text: "ਜੀ ਆਇਆਂ ਨੂੰ! BuildrAI ਐਪਲੀਕੇਸ਼ਨ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ। ਇੱਥੇ ਤੁਸੀਂ ਆਰਟੀਫਿਸ਼ੀਅਲ ਇੰਟੈਲੀਜੈਂਸ ਏਜੰਟ ਤਿਆਰ ਕਰ ਸਕਦੇ ਹੋ।" },
+    { title: "Haryanvi (हरियाणवी)", text: "राम राम जी! बिल्डर एआई स्टूडियो में थारा सुवागत सै। एआई एजेंट बनाओ अर अपने काम झटपट निपटाओ।" },
+    { title: "Urdu (اردو)", text: "خوش آمدید! بلڈر اے آئی اسٹوڈیو میں آپ کا استقبال ہے۔ گراک اور اوپن راؤٹر کے جدید ماڈلز استعمال کریں۔" },
+    { title: "Arabic (العربية)", text: "أهلاً بك في منصة BuildrAI للذكاء الاصطناعي! يمكنك الآن إنشاء واختبار وتطوير وكلاء الذكاء الاصطناعي بسهولة." },
+    { title: "English Intro", text: "Welcome to BuildrAI Agent Studio! Powered by Fish Audio S2.1 Pro on OpenRouter." }
   ];
 
   const handleSynthesize = async () => {

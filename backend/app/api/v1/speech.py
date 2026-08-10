@@ -8,7 +8,7 @@ router = APIRouter(prefix="/speech", tags=["Speech & Audio Studio"])
 
 class SynthesizeSpeechRequest(BaseModel):
     text: str
-    voice: Optional[str] = "en-US-expressive"
+    voice: Optional[str] = "hi-IN-expressive"
     speed: Optional[float] = 1.0
     model: Optional[str] = "fish-audio/s2.1-pro-free:free"
     api_key: Optional[str] = None
@@ -23,7 +23,7 @@ async def synthesize_speech(req: SynthesizeSpeechRequest) -> Dict[str, Any]:
 
     res = await provider.generate_speech(
         text=req.text,
-        voice=req.voice or "en-US-expressive",
+        voice=req.voice or "hi-IN-expressive",
         speed=req.speed or 1.0,
         model=req.model or "fish-audio/s2.1-pro-free:free"
     )
@@ -45,10 +45,13 @@ async def get_available_voices():
         "provider": "Fish Audio / OpenRouter",
         "model": "fish-audio/s2.1-pro-free:free",
         "voices": [
+            {"id": "hi-IN-expressive", "name": "Fish Voice — Hindi Expressive (हिन्दी)", "gender": "Female", "language": "Hindi"},
+            {"id": "pa-IN-studio", "name": "Fish Voice — Punjabi Studio (ਪੰਜਾਬੀ)", "gender": "Male", "language": "Punjabi"},
+            {"id": "hne-IN-deshi", "name": "Fish Voice — Haryanvi Desi Accent (हरियाणवी)", "gender": "Male", "language": "Haryanvi"},
+            {"id": "ur-PK-narrator", "name": "Fish Voice — Urdu Classic Narrator (اردو)", "gender": "Male", "language": "Urdu"},
+            {"id": "ar-SA-orpheus", "name": "Fish Voice — Arabic Saudi Orpheus (العربية)", "gender": "Female", "language": "Arabic"},
             {"id": "en-US-expressive", "name": "Fish Voice — English Expressive", "gender": "Female", "language": "English"},
             {"id": "en-US-professional", "name": "Fish Voice — English Studio Narrator", "gender": "Male", "language": "English"},
-            {"id": "en-US-conversational", "name": "Fish Voice — Casual Assistant", "gender": "Neutral", "language": "English"},
-            {"id": "es-ES-natural", "name": "Fish Voice — Spanish Natural", "gender": "Female", "language": "Spanish"},
-            {"id": "fr-FR-studio", "name": "Fish Voice — French Studio", "gender": "Male", "language": "French"}
+            {"id": "es-ES-natural", "name": "Fish Voice — Spanish Natural", "gender": "Female", "language": "Spanish"}
         ]
     }

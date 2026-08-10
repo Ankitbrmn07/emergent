@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bot, Cpu, FileText, Wrench, Check, ArrowRight, ArrowLeft, Zap, Sparkles, Globe } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Bot, Cpu, FileText, Wrench, Check, ArrowRight, ArrowLeft, Zap, Sparkles, Globe, Edit3 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Tool, KnowledgeBase, GroqModelInfo } from '../types';
 
 export const AgentWizardPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit_id');
   const [step, setStep] = useState(1);
 
   // Available Data
   const [availableModels, setAvailableModels] = useState<GroqModelInfo[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -20,10 +23,10 @@ export const AgentWizardPage: React.FC = () => {
     avatar: 'code-bot',
     category: 'developer',
     provider: 'Groq',
-    model_name: 'llama-3.3-70b-versatile',
+    model_name: 'openai/gpt-oss-120b',
     temperature: 0.7,
     max_tokens: 4096,
-    system_instructions: 'You are a professional software development assistant powered by Groq LPU Llama 3.3 70B. Analyze requests carefully before selecting tools. Maintain code clean principles.',
+    system_instructions: 'You are a professional software development assistant. Analyze requests carefully before selecting tools. Maintain code clean principles.',
     behavior_rules: 'Test code logic with calculator/code runner tools before providing answers. Never delete files without explicit approval.',
     response_style: 'Professional & Concise',
     safety_rules: 'Never execute destructive database or filesystem operations without human authorization.',
@@ -52,20 +55,46 @@ export const AgentWizardPage: React.FC = () => {
         setTools(toolRes.data);
         setKnowledgeBases(kbRes.data);
 
-        // Preselect all built-in tools by default
-        const defaultToolIds = toolRes.data.map((t: Tool) => t.id);
-        const defaultKbIds = kbRes.data.map((k: KnowledgeBase) => k.id);
-        setFormData(prev => ({
-          ...prev,
-          tool_ids: defaultToolIds,
-          knowledge_base_ids: defaultKbIds
-        }));
+        if (editId) {
+          setIsEditMode(true);
+          const agentRes = await apiClient.get(`/agents/${editId}`);
+          const a = agentRes.data;
+          setFormData({
+            name: a.name || '',
+            description: a.description || '',
+            avatar: a.avatar || 'code-bot',
+            category: a.category || 'developer',
+            provider: a.provider || 'Groq',
+            model_name: a.model_name || 'openai/gpt-oss-120b',
+            temperature: a.temperature ?? 0.7,
+            max_tokens: a.max_tokens ?? 4096,
+            system_instructions: a.system_instructions || '',
+            behavior_rules: a.behavior_rules || '',
+            response_style: a.response_style || 'Professional & Concise',
+            safety_rules: a.safety_rules || '',
+            permissions: a.permissions || {
+              READ: 'allowed', WRITE: 'approval_required', EXECUTE: 'allowed', DATABASE: 'approval_required', NETWORK: 'allowed', DEPLOY: 'denied'
+            },
+            memory_enabled: a.memory_enabled ?? true,
+            tool_ids: a.tool_ids || toolRes.data.map((t: Tool) => t.id),
+            knowledge_base_ids: a.knowledge_base_ids || kbRes.data.map((k: KnowledgeBase) => k.id)
+          });
+        } else {
+          // Preselect all built-in tools by default
+          const defaultToolIds = toolRes.data.map((t: Tool) => t.id);
+          const defaultKbIds = kbRes.data.map((k: KnowledgeBase) => k.id);
+          setFormData(prev => ({
+            ...prev,
+            tool_ids: defaultToolIds,
+            knowledge_base_ids: defaultKbIds
+          }));
+        }
       } catch (err) {
         console.error('Failed loading wizard data:', err);
       }
     };
     loadInitialData();
-  }, []);
+  }, [editId]);
 
   const handleToggleTool = (id: string) => {
     setFormData(prev => ({
@@ -87,23 +116,31 @@ export const AgentWizardPage: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const resp = await apiClient.post('/agents', formData);
-      navigate(`/playground?agent=${resp.data.id}`);
+      if (isEditMode && editId) {
+        await apiClient.put(`/agents/${editId}`, formData);
+        alert('Agent updated successfully!');
+        navigate(`/playground?agent=${editId}`);
+      } else {
+        const resp = await apiClient.post('/agents', formData);
+        navigate(`/playground?agent=${resp.data.id}`);
+      }
     } catch (err) {
-      alert('Error creating agent: ' + err);
+      alert('Error saving agent: ' + err);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Wizard Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center space-x-2">
-            <Bot className="w-5 h-5 text-purple-400" />
-            <span>Agent Creation Wizard</span>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+            {isEditMode ? <Edit3 className="w-5 h-5 text-purple-500" /> : <Bot className="w-5 h-5 text-purple-500" />}
+            <span>{isEditMode ? `Edit & Configure AI Agent — ${formData.name}` : 'Agent Creation Wizard'}</span>
           </h1>
-          <p className="text-xs text-slate-400">Configure persona, Groq model, system instructions, tools, and permissions</p>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            {isEditMode ? 'Modify agent persona, change model provider, system instructions, tools, and permissions' : 'Configure persona, Groq & OpenRouter model, system instructions, tools, and permissions'}
+          </p>
         </div>
         <div className="flex items-center space-x-2 text-xs font-semibold text-slate-400">
           <span>Step {step} of 4</span>
@@ -440,8 +477,8 @@ export const AgentWizardPage: React.FC = () => {
               onClick={handleSubmit}
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-purple-600/25 flex items-center space-x-2 glow-purple"
             >
-              <Sparkles className="w-4 h-4" />
-              <span>Deploy Agent to Playground</span>
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>{isEditMode ? 'Save & Update Agent Config 💾' : 'Deploy Agent to Playground 🚀'}</span>
             </button>
           )}
         </div>

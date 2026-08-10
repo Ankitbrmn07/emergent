@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from typing import List, Optional, Dict, Any
 from app.core.database import get_db
 from app.core.config import settings
@@ -170,8 +170,20 @@ async def update_agent(agent_id: str, payload: CreateAgentSchema, db: AsyncSessi
     agent.permissions = json.dumps(payload.permissions) if payload.permissions else agent.permissions
     agent.memory_enabled = payload.memory_enabled
 
+    # Rebind tool_ids
+    if payload.tool_ids is not None:
+        await db.execute(delete(AgentToolConfig).where(AgentToolConfig.agent_id == agent_id))
+        for tid in payload.tool_ids:
+            db.add(AgentToolConfig(agent_id=agent.id, tool_id=tid))
+
+    # Rebind knowledge_base_ids
+    if payload.knowledge_base_ids is not None:
+        await db.execute(delete(AgentKnowledgeBase).where(AgentKnowledgeBase.agent_id == agent_id))
+        for kbid in payload.knowledge_base_ids:
+            db.add(AgentKnowledgeBase(agent_id=agent.id, knowledge_base_id=kbid))
+
     await db.commit()
-    return {"id": agent.id, "status": "updated"}
+    return {"id": agent.id, "name": agent.name, "status": "updated"}
 
 @router.delete("/{agent_id}")
 async def delete_agent(agent_id: str, db: AsyncSession = Depends(get_db)):

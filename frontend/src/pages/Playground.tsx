@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Bot,
   Send,
@@ -11,12 +11,14 @@ import {
   Activity,
   Copy,
   Check,
-  Volume2
+  Volume2,
+  Edit3
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Agent, Conversation, Message, ExecutionInspector } from '../types';
 
 export const PlaygroundPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const agentIdParam = searchParams.get('agent');
 
@@ -163,7 +165,19 @@ export const PlaygroundPage: React.FC = () => {
         <div className="space-y-4">
           {/* Agent Switcher */}
           <div className="space-y-1">
-            <span className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider px-1">Active Agent</span>
+            <div className="flex items-center justify-between px-1">
+              <span className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Active Agent</span>
+              {selectedAgent && (
+                <button
+                  onClick={() => navigate(`/agents?edit_id=${selectedAgent.id}`)}
+                  className="text-[10px] font-semibold text-purple-600 dark:text-purple-400 hover:underline flex items-center space-x-1"
+                  title="Edit agent model, persona & rules"
+                >
+                  <Edit3 className="w-2.5 h-2.5" />
+                  <span>Edit Config</span>
+                </button>
+              )}
+            </div>
             <select
               value={selectedAgent?.id || ''}
               onChange={(e) => {
