@@ -143,10 +143,16 @@ async def send_message_to_agent(
     # Agent Permissions
     perms = json.loads(agent.permissions) if isinstance(agent.permissions, str) else agent.permissions
 
+    # Fetch User Keys
+    u_stmt = select(User).where(User.id == user_id)
+    u_res = await db.execute(u_stmt)
+    curr_user = u_res.scalar_one_or_none()
+
     # Build Agent Config Dict
     agent_config = {
         "id": agent.id,
         "name": agent.name,
+        "provider": agent.provider,
         "model_name": agent.model_name,
         "temperature": agent.temperature,
         "max_tokens": agent.max_tokens,
@@ -157,7 +163,10 @@ async def send_message_to_agent(
     }
 
     # Execute Agent Runtime Step
-    runtime = AgentRuntimeService()
+    runtime = AgentRuntimeService(
+        user_groq_api_key=curr_user.groq_api_key if curr_user else None,
+        user_openrouter_api_key=curr_user.openrouter_api_key if curr_user else None
+    )
     runtime_res = await runtime.run_agent_step(
         agent_config=agent_config,
         user_message=payload.message,

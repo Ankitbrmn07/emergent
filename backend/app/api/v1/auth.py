@@ -23,6 +23,7 @@ class UserProfileSchema(BaseModel):
     email: str
     is_admin: bool
     groq_api_key: str | None = None
+    openrouter_api_key: str | None = None
 
 @router.post("/register")
 async def register(payload: RegisterSchema, db: AsyncSession = Depends(get_db)):
@@ -49,7 +50,9 @@ async def register(payload: RegisterSchema, db: AsyncSession = Depends(get_db)):
             "id": user.id,
             "name": user.name,
             "email": user.email,
-            "is_admin": user.is_admin
+            "is_admin": user.is_admin,
+            "groq_api_key": user.groq_api_key,
+            "openrouter_api_key": user.openrouter_api_key
         }
     }
 
@@ -71,7 +74,8 @@ async def login(payload: LoginSchema, db: AsyncSession = Depends(get_db)):
             "name": user.name,
             "email": user.email,
             "is_admin": user.is_admin,
-            "groq_api_key": user.groq_api_key
+            "groq_api_key": user.groq_api_key,
+            "openrouter_api_key": user.openrouter_api_key
         }
     }
 
@@ -81,6 +85,26 @@ async def update_groq_key(payload: dict, user_id: str = "default_user", db: Asyn
     res = await db.execute(stmt)
     user = res.scalar_one_or_none()
     if user:
-        user.groq_api_key = payload.get("groq_api_key", "")
+        if "groq_api_key" in payload:
+            user.groq_api_key = payload.get("groq_api_key", "")
+        if "openrouter_api_key" in payload:
+            user.openrouter_api_key = payload.get("openrouter_api_key", "")
         await db.commit()
     return {"status": "updated"}
+
+@router.put("/profile/keys")
+async def update_api_keys(payload: dict, user_id: str = "default_user", db: AsyncSession = Depends(get_db)):
+    stmt = select(User).where(User.id == user_id)
+    res = await db.execute(stmt)
+    user = res.scalar_one_or_none()
+    if user:
+        if "groq_api_key" in payload:
+            user.groq_api_key = payload.get("groq_api_key", "")
+        if "openrouter_api_key" in payload:
+            user.openrouter_api_key = payload.get("openrouter_api_key", "")
+        await db.commit()
+    return {
+        "status": "updated",
+        "groq_api_key": user.groq_api_key if user else None,
+        "openrouter_api_key": user.openrouter_api_key if user else None
+    }

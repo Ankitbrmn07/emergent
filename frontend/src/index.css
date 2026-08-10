@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* ----------------------------------------------------
+   THEME SYSTEM DEFINITIONS
+   ---------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
 @layer base {
   html.dark body {
     background-color: #0B0F17;
@@ -11,17 +27,21 @@
   }
 }
 
-/* Dark Theme Utilities */
+/* ----------------------------------------------------
+   DARK THEME UTILITIES
+   ---------------------------------------------------- */
 html.dark .glass-panel {
   background: rgba(17, 24, 39, 0.75);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
 }
 
 html.dark .glass-card {
   background: rgba(30, 41, 59, 0.6);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #F8FAFC;
 }
 
 html.dark .glass-card:hover {
@@ -29,12 +49,15 @@ html.dark .glass-card:hover {
   box-shadow: 0 0 25px rgba(124, 58, 237, 0.15);
 }
 
-/* Light Theme Utilities */
+/* ----------------------------------------------------
+   LIGHT THEME UTILITIES
+   ---------------------------------------------------- */
 html.light .glass-panel {
   background: #FFFFFF;
   backdrop-filter: blur(16px);
   border: 1px solid #E2E8F0;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  color: #0F172A;
 }
 
 html.light .glass-card {
@@ -42,6 +65,7 @@ html.light .glass-card {
   backdrop-filter: blur(12px);
   border: 1px solid #E2E8F0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  color: #0F172A;
 }
 
 html.light .glass-card:hover {
@@ -49,6 +73,7 @@ html.light .glass-card:hover {
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
 }
 
+/* Accent Glow Effects */
 .glow-purple {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
 }
@@ -57,25 +82,39 @@ html.light .glass-card:hover {
   box-shadow: 0 0 25px rgba(249, 115, 22, 0.25);
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
+/* Custom Scrollbars */
+html.dark ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
-::-webkit-scrollbar-track {
+html.dark ::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #475569;
+html.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
   border-radius: 9999px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+html.light ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 html.light ::-webkit-scrollbar-thumb {
   background: #CBD5E1;
+  border-radius: 9999px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #64748B;
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
 }

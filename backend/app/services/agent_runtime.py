@@ -3,12 +3,14 @@ import time
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional, AsyncGenerator
 from app.services.groq_provider import GroqProviderService
+from app.services.openrouter_provider import OpenRouterProviderService
 from app.services.tool_executor import ToolExecutorService
 from app.services.rag_engine import RAGEngineService
 
 class AgentRuntimeService:
-    def __init__(self, user_groq_api_key: Optional[str] = None):
+    def __init__(self, user_groq_api_key: Optional[str] = None, user_openrouter_api_key: Optional[str] = None):
         self.groq_service = GroqProviderService(api_key=user_groq_api_key)
+        self.openrouter_service = OpenRouterProviderService(api_key=user_openrouter_api_key)
 
     async def run_agent_step(
         self,
@@ -20,7 +22,7 @@ class AgentRuntimeService:
         permissions: Optional[Dict[str, str]] = None
     ) -> Dict[str, Any]:
         """
-        Executes a complete agent reasoning step with tools, permissions, and Groq LLM
+        Executes a complete agent reasoning step with tools, permissions, and Multi-Provider LLM (Groq or OpenRouter)
         """
         start_time = time.time()
         permissions = permissions or {
@@ -32,11 +34,19 @@ class AgentRuntimeService:
             "DEPLOY": "denied"
         }
 
+        model_name = agent_config.get("model_name", "llama-3.3-70b-versatile")
+        provider = agent_config.get("provider")
+        if not provider:
+            if "/" in model_name or "free" in model_name or ":" in model_name:
+                provider = "OpenRouter"
+            else:
+                provider = "Groq"
+
         timeline = []
         timeline.append({
             "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S"),
             "event": "Agent Started",
-            "details": f"Initializing agent session with Groq model '{agent_config.get('model_name', 'llama-3.3-70b-versatile')}'"
+            "details": f"Initializing agent session via {provider} provider with model '{model_name}'"
         })
 
         # 1. RAG Context Retrieval if knowledge base chunks exist
@@ -73,7 +83,7 @@ class AgentRuntimeService:
         # Add current user message
         messages.append({"role": "user", "content": user_message})
 
-        # Format tool definitions for Groq API
+        # Format tool definitions
         formatted_tools = []
         for tool in enabled_tools:
             formatted_tools.append({
@@ -85,22 +95,31 @@ class AgentRuntimeService:
                 }
             })
 
-        # 3. Call Groq Model
+        # 3. Call Provider Service (Groq or OpenRouter)
         timeline.append({
             "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S"),
-            "event": "Groq LLM Reasoning",
-            "details": f"Querying Groq LPU with {len(formatted_tools)} tool definitions"
+            "event": f"{provider} LLM Reasoning",
+            "details": f"Querying {provider} model '{model_name}' with {len(formatted_tools)} tool definitions"
         })
 
-        groq_resp = await self.groq_service.chat_completion(
-            messages=messages,
-            model=agent_config.get("model_name", "llama-3.3-70b-versatile"),
-            temperature=agent_config.get("temperature", 0.7),
-            max_tokens=agent_config.get("max_tokens", 4096),
-            tools=formatted_tools if formatted_tools else None
-        )
+        if provider == "OpenRouter":
+            llm_resp = await self.openrouter_service.chat_completion(
+                messages=messages,
+                model=model_name,
+                temperature=agent_config.get("temperature", 0.7),
+                max_tokens=agent_config.get("max_tokens", 4096),
+                tools=formatted_tools if formatted_tools else None
+            )
+        else:
+            llm_resp = await self.groq_service.chat_completion(
+                messages=messages,
+                model=model_name,
+                temperature=agent_config.get("temperature", 0.7),
+                max_tokens=agent_config.get("max_tokens", 4096),
+                tools=formatted_tools if formatted_tools else None
+            )
 
-        tool_calls = groq_resp.get("tool_calls")
+        tool_calls = llm_resp.get("tool_calls")
         executed_tools_log = []
         pending_approval_request = None
 
@@ -132,7 +151,6 @@ class AgentRuntimeService:
                         "action_description": f"Agent requests execution of '{func_name}' with parameters {json.dumps(args)}",
                         "parameters": args
                     }
-                    # Pause tool execution for approval
                     break
                 elif perm_setting == "denied":
                     executed_tools_log.append({
@@ -149,7 +167,6 @@ class AgentRuntimeService:
                     "details": f"Executing tool '{func_name}'..."
                 })
 
-                # Find custom tool config if available
                 custom_cfg = next((t for t in enabled_tools if t["name"] == func_name and not t.get("is_builtin")), None)
 
                 tool_res, tool_status = await ToolExecutorService.execute_tool(
@@ -171,10 +188,10 @@ class AgentRuntimeService:
                     "result": tool_res
                 })
 
-                # Feed tool result back to Groq LLM for final response synthesis
+                # Feed tool result back to LLM for final response synthesis
                 messages.append({
                     "role": "assistant",
-                    "content": groq_resp.get("content") or "",
+                    "content": llm_resp.get("content") or "",
                     "tool_calls": tool_calls
                 })
                 messages.append({
@@ -184,34 +201,42 @@ class AgentRuntimeService:
                 })
 
                 # Second turn for final synthesis
-                second_resp = await self.groq_service.chat_completion(
-                    messages=messages,
-                    model=agent_config.get("model_name", "llama-3.3-70b-versatile"),
-                    temperature=agent_config.get("temperature", 0.7)
-                )
-                groq_resp["content"] = second_resp.get("content")
-                groq_resp["prompt_tokens"] += second_resp.get("prompt_tokens", 0)
-                groq_resp["completion_tokens"] += second_resp.get("completion_tokens", 0)
-                groq_resp["total_tokens"] += second_resp.get("total_tokens", 0)
+                if provider == "OpenRouter":
+                    second_resp = await self.openrouter_service.chat_completion(
+                        messages=messages,
+                        model=model_name,
+                        temperature=agent_config.get("temperature", 0.7)
+                    )
+                else:
+                    second_resp = await self.groq_service.chat_completion(
+                        messages=messages,
+                        model=model_name,
+                        temperature=agent_config.get("temperature", 0.7)
+                    )
+                llm_resp["content"] = second_resp.get("content")
+                llm_resp["prompt_tokens"] += second_resp.get("prompt_tokens", 0)
+                llm_resp["completion_tokens"] += second_resp.get("completion_tokens", 0)
+                llm_resp["total_tokens"] += second_resp.get("total_tokens", 0)
 
         timeline.append({
             "timestamp": datetime.now(timezone.utc).strftime("%H:%M:%S"),
             "event": "Final Response",
-            "details": "Agent generated final response successfully."
+            "details": f"Agent generated final response successfully via {provider}."
         })
 
         elapsed_ms = (time.time() - start_time) * 1000
 
         return {
             "status": "pending_approval" if pending_approval_request else "completed",
-            "response": groq_resp.get("content", ""),
+            "response": llm_resp.get("content", ""),
             "tool_calls": tool_calls,
             "executed_tools": executed_tools_log,
             "pending_approval": pending_approval_request,
-            "model_used": agent_config.get("model_name", "llama-3.3-70b-versatile"),
+            "model_used": model_name,
+            "provider": provider,
             "duration_ms": round(elapsed_ms, 2),
-            "prompt_tokens": groq_resp.get("prompt_tokens", 0),
-            "completion_tokens": groq_resp.get("completion_tokens", 0),
-            "total_tokens": groq_resp.get("total_tokens", 0),
+            "prompt_tokens": llm_resp.get("prompt_tokens", 0),
+            "completion_tokens": llm_resp.get("completion_tokens", 0),
+            "total_tokens": llm_resp.get("total_tokens", 0),
             "timeline": timeline
         }

@@ -48,11 +48,17 @@ app.include_router(observability_router, prefix=settings.API_V1_STR)
 app.include_router(evaluations_router, prefix=settings.API_V1_STR)
 app.include_router(admin_router, prefix=settings.API_V1_STR)
 
+from sqlalchemy import select, text
+
 @app.on_event("startup")
 async def startup_event():
     # 1. Initialize Database Schemas
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        try:
+            await conn.execute(text("ALTER TABLE users ADD COLUMN openrouter_api_key TEXT;"))
+        except Exception:
+            pass
 
     # 2. Seed Default Built-in Tools & Default Demo Agent
     async with AsyncSessionLocal() as db:
@@ -98,13 +104,17 @@ async def startup_event():
                 name="Alex Developer",
                 hashed_password=get_password_hash("password123"),
                 is_admin=True,
-                groq_api_key="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"
+                groq_api_key="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",
+                openrouter_api_key="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"
             )
             db.add(user)
             await db.commit()
             await db.refresh(user)
-        elif not user.groq_api_key:
-            user.groq_api_key = "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"
+        else:
+            if not user.groq_api_key:
+                user.groq_api_key = "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"
+            if not user.openrouter_api_key:
+                user.openrouter_api_key = "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"
             await db.commit()
 
         # Seed Default "Developer Assistant" Agent (Groq powered)
@@ -140,48 +150,93 @@ async def startup_event():
             await db.commit()
             await db.refresh(default_agent)
 
+            for tool_id in tool_map.values():
+                db.add(AgentToolConfig(agent_id=default_agent.id, tool_id=tool_id))
+            await db.commit()
+
+        # Seed Default "OpenRouter Nemotron Agent" (OpenRouter powered)
+        or_stmt = select(Agent).where(Agent.name == "OpenRouter Nemotron Ultra")
+        or_res = await db.execute(or_stmt)
+        or_agent = or_res.scalar_one_or_none()
+        if not or_agent:
+            or_agent = Agent(
+                id="openrouter_nemotron_agent_02",
+                user_id=user.id,
+                name="OpenRouter Nemotron Ultra",
+                description="AI Agent powered by NVIDIA Nemotron 3 Ultra (free) via OpenRouter Network with 1,000,000 token context window.",
+                avatar="brain-bot",
+                category="researcher",
+                provider="OpenRouter",
+                model_name="nvidia/nemotron-3-ultra:free",
+                temperature=0.7,
+                max_tokens=4096,
+                system_instructions="You are a research & analysis agent powered by NVIDIA Nemotron 3 Ultra via OpenRouter. You specialize in deep reasoning, multi-document context analysis, web search, and tool execution.",
+                behavior_rules="Provide thorough structured answers using markdown formatting.",
+                response_style="Detailed & Analytical",
+                safety_rules="Maintain safety guidelines.",
+                permissions=json.dumps({
+                    "READ": "allowed",
+                    "WRITE": "approval_required",
+                    "EXECUTE": "allowed",
+                    "DATABASE": "approval_required",
+                    "NETWORK": "allowed",
+                    "DEPLOY": "denied"
+                })
+            )
+            db.add(or_agent)
+            await db.commit()
+            await db.refresh(or_agent)
+
+            for tool_id in tool_map.values():
+                db.add(AgentToolConfig(agent_id=or_agent.id, tool_id=tool_id))
+            await db.commit()
+            await db.refresh(default_agent)
+
             # Bind all built-in tools to default agent
             for tool_id in tool_map.values():
                 db.add(AgentToolConfig(agent_id=default_agent.id, tool_id=tool_id))
             
             # Seed Default Knowledge Base
-            kb = KnowledgeBase(
-                id="default_kb_01",
-                user_id=user.id,
-                name="Groq Architecture & API Docs",
-                description="Documentation for Groq LPUs, Llama 3.3 70B models, and agent function calling.",
-                total_documents=1,
-                total_chunks=3
-            )
-            db.add(kb)
-            await db.commit()
+            kb_stmt = select(KnowledgeBase).where(KnowledgeBase.id == "default_kb_01")
+            kb_res = await db.execute(kb_stmt)
+            if not kb_res.scalar_one_or_none():
+                kb = KnowledgeBase(
+                    id="default_kb_01",
+                    user_id=user.id,
+                    name="Groq Architecture & API Docs",
+                    description="Documentation for Groq LPUs, Llama 3.3 70B models, and agent function calling.",
+                    total_documents=1,
+                    total_chunks=3
+                )
+                db.add(kb)
+                await db.commit()
 
-            doc = Document(
-                id="doc_groq_01",
-                knowledge_base_id=kb.id,
-                filename="groq_agent_guide.md",
-                file_type="md",
-                file_size=1240,
-                status="indexed",
-                chunk_count=3
-            )
-            db.add(doc)
-            await db.commit()
+                doc = Document(
+                    id="doc_groq_01",
+                    knowledge_base_id=kb.id,
+                    filename="groq_agent_guide.md",
+                    file_type="md",
+                    file_size=1240,
+                    status="indexed",
+                    chunk_count=3
+                )
+                db.add(doc)
+                await db.commit()
 
-            chunks_texts = [
-                "Groq LPU (Language Processing Unit) is designed to provide ultra-fast inference speed for large language models like Llama 3.3 70B Versatile and DeepSeek R1.",
-                "Function calling on Groq allows agentic workflows to bind tools dynamically, executing web searches, python code sandboxes, and database queries in real-time.",
-                "RAG knowledge bases split uploaded documents into overlapping chunks, indexing vectors for semantic similarity retrieval during agent reasoning turns."
-            ]
+                chunks_texts = [
+                    "Groq LPU (Language Processing Unit) is designed to provide ultra-fast inference speed for large language models like Llama 3.3 70B Versatile and DeepSeek R1.",
+                    "Function calling on Groq allows agentic workflows to bind tools dynamically, executing web searches, python code sandboxes, and database queries in real-time.",
+                    "RAG knowledge bases split uploaded documents into overlapping chunks, indexing vectors for semantic similarity retrieval during agent reasoning turns."
+                ]
 
-            for idx, ctext in enumerate(chunks_texts):
-                db.add(DocumentChunk(
-                    document_id=doc.id,
-                    chunk_index=idx,
-                    content=ctext
-                ))
+                for idx, ctext in enumerate(chunks_texts):
+                    db.add(DocumentChunk(
+                        document_id=doc.id,
+                        chunk_index=idx,
+                        content=ctext
+                    ))
 
-            await db.commit()
+                await db.commit()
 
 @app.get("/")
 async def root():

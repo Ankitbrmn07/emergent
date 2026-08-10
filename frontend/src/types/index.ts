@@ -4,16 +4,21 @@ export interface User {
   email: string;
   is_admin: boolean;
   groq_api_key?: string;
+  openrouter_api_key?: string;
 }
 
-export interface GroqModelInfo {
+export interface ModelInfo {
   id: string;
   name: string;
-  provider: string;
+  provider: 'Groq' | 'OpenRouter' | string;
+  category?: string;
   context_window: number;
   description: string;
   recommended?: boolean;
+  is_free?: boolean;
 }
+
+export type GroqModelInfo = ModelInfo;
 
 export interface AgentPermissions {
   READ: string;

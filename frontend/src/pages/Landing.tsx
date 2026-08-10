@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Bot, Zap, Cpu, Wrench, Shield, ArrowRight, Play, CheckCircle2, Terminal, Code, Sparkles, Layers, Database } from 'lucide-react';
+import { Bot, Zap, Cpu, Wrench, Shield, ArrowRight, Play, CheckCircle2, Code, Sparkles, Layers, Database } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const models = [

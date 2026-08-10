@@ -3,56 +3,216 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Buildr AI - Groq AI Agent Platform"
+    PROJECT_NAME: str = "Buildr AI - Multi-Provider AI Agent Platform"
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = "groq-agent-platform-super-secret-jwt-key-2026-buildr"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
-    # Groq API Configuration
+    # Provider API Keys
     GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", "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")
+    OPENROUTER_API_KEY: Optional[str] = os.getenv("OPENROUTER_API_KEY", "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")
     DEFAULT_MODEL: str = "llama-3.3-70b-versatile"
     
-    # Supported Groq Models
+    # Supported Groq LPU Models
     AVAILABLE_GROQ_MODELS: list[dict] = [
         {
             "id": "llama-3.3-70b-versatile",
             "name": "Llama 3.3 70B Versatile",
             "provider": "Groq",
+            "category": "Reasoning & Tool Use",
             "context_window": 128000,
-            "description": "Most intelligent general model on Groq, ideal for reasoning, coding, & tool selection.",
-            "recommended": True
+            "description": "Most intelligent general model on Groq LPU, ideal for reasoning, coding, & tool selection.",
+            "recommended": True,
+            "is_free": True
         },
         {
             "id": "llama-3.1-8b-instant",
             "name": "Llama 3.1 8B Instant",
             "provider": "Groq",
+            "category": "Fast Tool Use",
             "context_window": 128000,
-            "description": "Ultra-fast lightweight model for quick tasks and simple tool executions."
+            "description": "Ultra-fast lightweight model for quick tasks and simple tool executions.",
+            "is_free": True
         },
         {
             "id": "deepseek-r1-distill-llama-70b",
             "name": "DeepSeek R1 Distill Llama 70B",
             "provider": "Groq",
+            "category": "Advanced Reasoning",
             "context_window": 128000,
-            "description": "Specialized reasoning model for complex logic, math, and analytical debugging."
+            "description": "Specialized reasoning model for complex logic, math, and analytical debugging.",
+            "is_free": True
         },
         {
             "id": "mixtral-8x7b-32768",
             "name": "Mixtral 8x7B Instruct",
             "provider": "Groq",
+            "category": "Text & Code",
             "context_window": 32768,
-            "description": "High-throughput Mixture of Experts model."
+            "description": "High-throughput Mixture of Experts model.",
+            "is_free": True
         },
         {
             "id": "gemma2-9b-it",
             "name": "Gemma 2 9B Instruct",
             "provider": "Groq",
+            "category": "General Text",
             "context_window": 8192,
-            "description": "Google lightweight instruction-tuned model."
+            "description": "Google lightweight instruction-tuned model.",
+            "is_free": True
         }
     ]
-    
+
+    # Supported OpenRouter Models (Including Free Models & Specialty Routers)
+    AVAILABLE_OPENROUTER_MODELS: list[dict] = [
+        {
+            "id": "openrouter/free-models-router",
+            "name": "Free Models Router (Auto)",
+            "provider": "OpenRouter",
+            "category": "Free Auto Router",
+            "context_window": 200000,
+            "description": "Intelligent OpenRouter endpoint auto-routing requests to available zero-cost models.",
+            "is_free": True,
+            "recommended": True
+        },
+        {
+            "id": "nvidia/nemotron-3-ultra:free",
+            "name": "NVIDIA: Nemotron 3 Ultra (free)",
+            "provider": "OpenRouter",
+            "category": "Reasoning & Tool Use",
+            "context_window": 1000000,
+            "description": "NVIDIA 1M context window model for massive document reasoning and tool use.",
+            "is_free": True
+        },
+        {
+            "id": "poolside/laguna-s-2.1:free",
+            "name": "Poolside: Laguna S 2.1 (free)",
+            "provider": "OpenRouter",
+            "category": "Coding & Tool Use",
+            "context_window": 262144,
+            "description": "High throughput coding agent model with 262k context.",
+            "is_free": True
+        },
+        {
+            "id": "nvidia/nemotron-3-super:free",
+            "name": "NVIDIA: Nemotron 3 Super (free)",
+            "provider": "OpenRouter",
+            "category": "Reasoning",
+            "context_window": 262144,
+            "description": "Deep reasoning model for high precision multi-turn instructions.",
+            "is_free": True
+        },
+        {
+            "id": "cohere/north-mini-code:free",
+            "name": "Cohere: North Mini Code (free)",
+            "provider": "OpenRouter",
+            "category": "Coding",
+            "context_window": 256000,
+            "description": "Cohere code generation model with low latency execution.",
+            "is_free": True
+        },
+        {
+            "id": "poolside/laguna-xs-2.1:free",
+            "name": "Poolside: Laguna XS 2.1 (free)",
+            "provider": "OpenRouter",
+            "category": "Fast Tool Use",
+            "context_window": 262144,
+            "description": "Ultra fast (65 t/s) lightweight coding & reasoning model.",
+            "is_free": True
+        },
+        {
+            "id": "nvidia/nemotron-3-nano-30b-a3b:free",
+            "name": "NVIDIA: Nemotron 3 Nano 30B A3B (free)",
+            "provider": "OpenRouter",
+            "category": "Multilingual & Tool Use",
+            "context_window": 256000,
+            "description": "88 t/s high performance 30B architecture.",
+            "is_free": True
+        },
+        {
+            "id": "inclusionai/ling-3.0-tiny:free",
+            "name": "InclusionAI: Ling 3.0 Tiny (free)",
+            "provider": "OpenRouter",
+            "category": "General Text",
+            "context_window": 262144,
+            "description": "91 t/s high throughput assistant model.",
+            "is_free": True
+        },
+        {
+            "id": "nvidia/nemotron-3-nano-omni:free",
+            "name": "NVIDIA: Nemotron 3 Nano Omni (free)",
+            "provider": "OpenRouter",
+            "category": "Multimodal & Speech",
+            "context_window": 256000,
+            "description": "Multimodal Omni model supporting text and structured tasks.",
+            "is_free": True
+        },
+        {
+            "id": "google/gemma-4-26b-a4b:free",
+            "name": "Google: Gemma 4 26B A4B (free)",
+            "provider": "OpenRouter",
+            "category": "Vision & Text",
+            "context_window": 262144,
+            "description": "Google Gemma 4 vision and text instruction model.",
+            "is_free": True
+        },
+        {
+            "id": "nvidia/nemotron-nano-9b-v2:free",
+            "name": "NVIDIA: Nemotron Nano 9B V2 (free)",
+            "provider": "OpenRouter",
+            "category": "Fast Text",
+            "context_window": 128000,
+            "description": "Lightweight Nemotron Nano v2 instruction model.",
+            "is_free": True
+        },
+        {
+            "id": "openai/gpt-oss-20b:free",
+            "name": "OpenAI: gpt-oss-20b (free)",
+            "provider": "OpenRouter",
+            "category": "Reasoning & Tool Use",
+            "context_window": 131072,
+            "description": "OpenAI open source 20B reasoning architecture.",
+            "is_free": True
+        },
+        {
+            "id": "google/gemma-4-31b:free",
+            "name": "Google: Gemma 4 31B (free)",
+            "provider": "OpenRouter",
+            "category": "General Text",
+            "context_window": 262144,
+            "description": "Google Gemma 4 31B parameter instruction model.",
+            "is_free": True
+        },
+        {
+            "id": "nvidia/nemotron-3.5-content-safety:free",
+            "name": "NVIDIA: Nemotron 3.5 Content Safety (free)",
+            "provider": "OpenRouter",
+            "category": "Safety & Moderation",
+            "context_window": 128000,
+            "description": "Ultra fast safety moderation & content filter engine.",
+            "is_free": True
+        },
+        {
+            "id": "openai/gpt-oss-120b",
+            "name": "OpenAI: GPT OSS 120B",
+            "provider": "OpenRouter",
+            "category": "Advanced Reasoning",
+            "context_window": 128000,
+            "description": "Flagship 120B reasoning model for multi-step agent planning.",
+            "is_free": False
+        },
+        {
+            "id": "qwen/qwen-3.6-27b",
+            "name": "Qwen 3.6 27B Instruct",
+            "provider": "OpenRouter",
+            "category": "Multilingual & Coding",
+            "context_window": 32768,
+            "description": "Qwen 3.6 high intelligence multilingual and tool calling model.",
+            "is_free": False
+        }
+    ]
+
     # Database Configuration
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./agent_platform.db")
 

@@ -30,7 +30,7 @@ class CreateAgentSchema(BaseModel):
 
 @router.get("/models")
 async def get_available_models():
-    return settings.AVAILABLE_GROQ_MODELS
+    return settings.AVAILABLE_GROQ_MODELS + settings.AVAILABLE_OPENROUTER_MODELS
 
 @router.get("")
 async def list_agents(user_id: str = "default_user", db: AsyncSession = Depends(get_db)):

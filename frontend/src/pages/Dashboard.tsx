@@ -10,9 +10,7 @@ import {
   Play,
   ArrowUpRight,
   TrendingUp,
-  Cpu,
-  Clock,
-  Key
+  Cpu
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Agent } from '../types';
@@ -31,7 +29,6 @@ export const DashboardPage: React.FC = () => {
     },
     recent_executions: []
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,8 +41,6 @@ export const DashboardPage: React.FC = () => {
         setMetrics(metricRes.data);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchData();
@@ -54,12 +49,12 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-purple-900/30 via-slate-900 to-indigo-900/30 dark:from-purple-900/30 dark:via-slate-900 dark:to-indigo-900/30 light:from-purple-100 light:via-white light:to-indigo-100 border border-purple-500/20 glass-panel">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-purple-900/20 via-slate-900/40 to-indigo-900/20 dark:from-purple-900/30 dark:via-slate-900 dark:to-indigo-900/30 border border-purple-500/20 glass-panel">
         <div className="space-y-1">
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center space-x-2">
             <span>Agent Platform Dashboard</span>
             <span className="px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-600 dark:text-purple-300 text-xs font-semibold">
-              Groq LPU Active
+              Groq & OpenRouter Active
             </span>
           </h1>
           <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -78,7 +73,7 @@ export const DashboardPage: React.FC = () => {
       {/* 4 Core Summary Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="glass-card rounded-2xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
             <span className="text-xs font-medium">Total Agents</span>
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
               <Bot className="w-4 h-4" />
@@ -90,11 +85,11 @@ export const DashboardPage: React.FC = () => {
               <TrendingUp className="w-3 h-3 mr-0.5" /> +100%
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">{metrics.summary.active_agents} currently active & published</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">{metrics.summary.active_agents} currently active & published</p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
             <span className="text-xs font-medium">Total Conversations</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
               <MessageSquare className="w-4 h-4" />
@@ -106,11 +101,11 @@ export const DashboardPage: React.FC = () => {
               <TrendingUp className="w-3 h-3 mr-0.5" /> +12 today
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">Across playground & API calls</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Across playground & API calls</p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
             <span className="text-xs font-medium">Tool Executions</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <Wrench className="w-4 h-4" />
@@ -122,21 +117,21 @@ export const DashboardPage: React.FC = () => {
               <TrendingUp className="w-3 h-3 mr-0.5" /> 98.4% success
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">Web search, math, code & HTTP API</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Web search, math, code & HTTP API</p>
         </div>
 
         <div className="glass-card rounded-2xl p-5 space-y-2">
-          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-xs font-medium">Groq Tokens Consumed</span>
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
+            <span className="text-xs font-medium">LLM Tokens Consumed</span>
             <div className="w-8 h-8 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400">
-              <Zap className="w-4 h-4 fill-orange-400" />
+              <Zap className="w-4 h-4 fill-orange-400 text-amber-500" />
             </div>
           </div>
           <div className="flex items-baseline space-x-2">
             <span className="text-2xl font-extrabold text-slate-900 dark:text-white">{metrics.summary.total_tokens_used.toLocaleString()}</span>
             <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold font-mono">1,200 tok/s</span>
           </div>
-          <p className="text-[11px] text-slate-500">Average response latency {metrics.summary.average_latency_ms}ms</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Average response latency {metrics.summary.average_latency_ms}ms</p>
         </div>
       </div>
 
@@ -194,7 +189,7 @@ export const DashboardPage: React.FC = () => {
                     onClick={() => navigate(`/playground?agent=${agent.id}`)}
                     className="px-3 py-1.5 rounded-lg bg-purple-600/15 border border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-600/25 font-medium flex items-center space-x-1 transition-all"
                   >
-                    <Play className="w-3 h-3 fill-purple-600 dark:fill-purple-300" />
+                    <Play className="w-3 h-3 fill-purple-600 dark:fill-purple-300 text-purple-600 dark:text-purple-300" />
                     <span>Test Playground</span>
                   </button>
                 </div>
@@ -206,13 +201,13 @@ export const DashboardPage: React.FC = () => {
         {/* Right Col: Recent Execution Activity Feed */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-bold text-white dark:text-white light:text-slate-900 flex items-center space-x-2">
-              <Activity className="w-4 h-4 text-emerald-400 dark:text-emerald-400 light:text-emerald-600" />
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>Recent Activity Feed</span>
             </h2>
             <button
               onClick={() => navigate('/observability')}
-              className="text-xs text-slate-400 dark:text-slate-400 light:text-slate-600 hover:text-white dark:hover:text-white light:hover:text-slate-900"
+              className="text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             >
               Logs
             </button>
@@ -221,32 +216,32 @@ export const DashboardPage: React.FC = () => {
           <div className="glass-card rounded-2xl p-4 space-y-3 font-mono text-xs max-h-[420px] overflow-y-auto">
             {metrics.recent_executions && metrics.recent_executions.length > 0 ? (
               metrics.recent_executions.map((e: any, idx: number) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-900/70 dark:bg-slate-900/70 light:bg-slate-100 border border-slate-800/80 dark:border-slate-800/80 light:border-slate-200 space-y-1.5">
+                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-purple-400 dark:text-purple-400 light:text-purple-700 font-bold">{e.model_used}</span>
+                    <span className="text-purple-700 dark:text-purple-400 font-bold">{e.model_used}</span>
                     <span className="text-slate-500">{e.created_at ? e.created_at.substring(11, 19) : '15:24:00'}</span>
                   </div>
-                  <div className="text-slate-300 dark:text-slate-300 light:text-slate-800 text-[11px] flex items-center justify-between font-sans">
+                  <div className="text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-between font-sans">
                     <span>Duration: {e.duration_ms}ms</span>
-                    <span className="text-emerald-400 dark:text-emerald-400 light:text-emerald-700 font-mono font-semibold">{e.total_tokens} Tokens</span>
+                    <span className="text-emerald-700 dark:text-emerald-400 font-mono font-semibold">{e.total_tokens} Tokens</span>
                   </div>
                 </div>
               ))
             ) : (
               <div className="space-y-2 py-2">
-                <div className="p-3 rounded-xl bg-slate-900/70 dark:bg-slate-900/70 light:bg-slate-100 border border-slate-800/80 dark:border-slate-800/80 light:border-slate-200 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-purple-400 dark:text-purple-400 light:text-purple-700 font-semibold">llama-3.3-70b-versatile</span>
+                    <span className="text-purple-700 dark:text-purple-400 font-semibold">llama-3.3-70b-versatile</span>
                     <span className="text-slate-500">Just now</span>
                   </div>
-                  <p className="text-[11px] text-slate-300 dark:text-slate-300 light:text-slate-800">Tool <code className="text-amber-300 dark:text-amber-300 light:text-amber-700">calculator</code> executed in 14ms</p>
+                  <p className="text-[11px] text-slate-700 dark:text-slate-300 font-sans">Tool <code className="text-amber-700 dark:text-amber-300">calculator</code> executed in 14ms</p>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-900/70 dark:bg-slate-900/70 light:bg-slate-100 border border-slate-800/80 dark:border-slate-800/80 light:border-slate-200 space-y-1">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 space-y-1">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-purple-400 dark:text-purple-400 light:text-purple-700 font-semibold">llama-3.3-70b-versatile</span>
+                    <span className="text-purple-700 dark:text-purple-400 font-semibold">nvidia/nemotron-3-ultra:free</span>
                     <span className="text-slate-500">2m ago</span>
                   </div>
-                  <p className="text-[11px] text-slate-300 dark:text-slate-300 light:text-slate-800">RAG Knowledge Chunk Retrieved (Score: 0.94)</p>
+                  <p className="text-[11px] text-slate-700 dark:text-slate-300 font-sans">OpenRouter Free Model Execution (Score: 1.0)</p>
                 </div>
               </div>
             )}

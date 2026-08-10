@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Bot, Cpu, FileText, Wrench, Shield, Check, ArrowRight, ArrowLeft, Zap, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bot, Cpu, FileText, Wrench, Check, ArrowRight, ArrowLeft, Zap, Sparkles, Globe } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import type { Tool, KnowledgeBase, GroqModelInfo } from '../types';
 
 export const AgentWizardPage: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
 
   // Available Data
   const [availableModels, setAvailableModels] = useState<GroqModelInfo[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -64,8 +62,6 @@ export const AgentWizardPage: React.FC = () => {
         }));
       } catch (err) {
         console.error('Failed loading wizard data:', err);
-      } finally {
-        setLoading(false);
       }
     };
     loadInitialData();
@@ -142,7 +138,7 @@ export const AgentWizardPage: React.FC = () => {
                   isActive ? 'bg-purple-600 text-white' : isDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'
                 }`}
               >
-                {isDone ? <Check className="w-4 h-4" /> : s.num}
+                {isDone ? <Check className="w-4 h-4 text-emerald-400" /> : <Icon className="w-3.5 h-3.5" />}
               </div>
               <span className="text-xs font-medium truncate">{s.title}</span>
             </button>
@@ -198,45 +194,91 @@ export const AgentWizardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Step 2: Groq Model Selection */}
+        {/* Step 2: Multi-Provider AI Model Selection */}
         {step === 2 && (
-          <div className="space-y-5 animate-in fade-in duration-200">
-            <h2 className="text-base font-bold text-white border-b border-slate-800/80 pb-2 flex items-center justify-between">
-              <span>Step 2 — Groq Model & Inference Settings</span>
-              <span className="text-xs text-orange-400 font-mono flex items-center space-x-1">
-                <Zap className="w-3.5 h-3.5 fill-orange-400" />
-                <span>Groq LPUs Enabled</span>
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800/80 pb-2 flex items-center justify-between">
+              <span>Step 2 — Model & Provider Selection</span>
+              <span className="text-xs text-purple-600 dark:text-purple-400 font-mono flex items-center space-x-1">
+                <Zap className="w-3.5 h-3.5 fill-purple-400" />
+                <span>Groq LPU & OpenRouter Network</span>
               </span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {availableModels.map(m => (
-                <div
-                  key={m.id}
-                  onClick={() => setFormData({ ...formData, model_name: m.id })}
-                  className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2 ${
-                    formData.model_name === m.id
-                      ? 'bg-purple-600/15 border-purple-500/60 shadow-lg shadow-purple-600/15'
-                      : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-xs text-white flex items-center space-x-1.5">
-                      <Cpu className="w-4 h-4 text-purple-400" />
-                      <span>{m.name}</span>
-                    </h3>
-                    {m.recommended && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-300">
-                        RECOMMENDED
-                      </span>
-                    )}
+            {/* Groq Models Group */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                <span>Groq LPU Engine Models</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableModels.filter(m => m.provider === 'Groq').map(m => (
+                  <div
+                    key={m.id}
+                    onClick={() => setFormData({ ...formData, model_name: m.id, provider: m.provider })}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2 ${
+                      formData.model_name === m.id
+                        ? 'bg-purple-600/15 border-purple-500 shadow-lg shadow-purple-600/15'
+                        : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-white flex items-center space-x-1.5">
+                        <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span>{m.name}</span>
+                      </h4>
+                      {m.recommended && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300">
+                          RECOMMENDED
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{m.description}</p>
+                    <div className="text-[10px] text-slate-500 font-mono flex items-center justify-between">
+                      <span>Context: {m.context_window.toLocaleString()} tokens</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">FREE LPU</span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">{m.description}</p>
-                  <div className="text-[10px] text-slate-500 font-mono">
-                    Context: {m.context_window.toLocaleString()} tokens
+                ))}
+              </div>
+            </div>
+
+            {/* OpenRouter Models Group */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+                <Globe className="w-3.5 h-3.5 text-indigo-500" />
+                <span>OpenRouter Network Models (Including Free Tier)</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {availableModels.filter(m => m.provider === 'OpenRouter').map(m => (
+                  <div
+                    key={m.id}
+                    onClick={() => setFormData({ ...formData, model_name: m.id, provider: m.provider })}
+                    className={`p-4 rounded-xl border cursor-pointer transition-all space-y-2 ${
+                      formData.model_name === m.id
+                        ? 'bg-indigo-600/15 border-indigo-500 shadow-lg shadow-indigo-600/15'
+                        : 'bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-white flex items-center space-x-1.5">
+                        <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <span>{m.name}</span>
+                      </h4>
+                      {m.is_free && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                          FREE MODEL
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">{m.description}</p>
+                    <div className="text-[10px] text-slate-500 font-mono flex items-center justify-between">
+                      <span>Context: {m.context_window.toLocaleString()} tokens</span>
+                      <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{m.category || 'OpenRouter'}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">

@@ -21,6 +21,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
     groq_api_key = Column(String, nullable=True)
+    openrouter_api_key = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
     agents = relationship("Agent", back_populates="owner", cascade="all, delete-orphan")

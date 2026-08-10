@@ -13,6 +13,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenGroqModal }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const hasGroqKey = Boolean(user?.groq_api_key && user.groq_api_key.trim().length > 5);
+  const hasOpenRouterKey = Boolean(user?.openrouter_api_key && user.openrouter_api_key.trim().length > 5);
 
   return (
     <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0B0F17]/90 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between transition-colors shadow-sm">
@@ -28,13 +29,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenGroqModal }) => {
             </span>
             <span className="px-2 py-0.5 text-[10px] font-semibold bg-purple-500/10 border border-purple-500/30 text-purple-700 dark:text-purple-300 rounded-full flex items-center space-x-1">
               <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400 fill-amber-400" />
-              <span>Groq LPU Engine</span>
+              <span>Multi-LLM Engine</span>
             </span>
           </div>
         </div>
       </div>
 
-      {/* Theme Toggle & Groq API Key Status */}
+      {/* Theme Toggle & Multi-Provider API Key Badges */}
       <div className="flex items-center space-x-3">
         {/* Light / Dark Mode Toggle Button */}
         <button
@@ -49,18 +50,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenGroqModal }) => {
           )}
         </button>
 
-        {/* Groq Key Badge */}
+        {/* Multi-Provider Key Badge Button */}
         <button
           onClick={onOpenGroqModal}
           className={`px-3 py-1.5 rounded-lg text-xs font-medium border flex items-center space-x-2 transition-all ${
-            hasGroqKey
+            hasGroqKey && hasOpenRouterKey
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20'
-              : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 glow-groq'
+              : 'bg-purple-500/10 border-purple-500/30 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 glow-purple'
           }`}
         >
           <Key className="w-3.5 h-3.5" />
-          <span>{hasGroqKey ? 'Groq Key Active' : 'Configure Groq Key'}</span>
-          {hasGroqKey && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
+          <span>
+            {hasGroqKey && hasOpenRouterKey
+              ? 'Groq & OpenRouter Active'
+              : hasOpenRouterKey
+              ? 'OpenRouter Key Active'
+              : 'Configure Provider Keys'}
+          </span>
+          {(hasGroqKey || hasOpenRouterKey) && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
         </button>
 
         {/* User Profile Dropdown */}

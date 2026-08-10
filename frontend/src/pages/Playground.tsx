@@ -7,15 +7,8 @@ import {
   Zap,
   CheckCircle2,
   Clock,
-  Cpu,
-  AlertTriangle,
-  RotateCcw,
-  Square,
-  Paperclip,
-  ChevronRight,
   ShieldAlert,
   Activity,
-  Layers,
   Copy,
   Check
 } from 'lucide-react';
@@ -211,7 +204,7 @@ export const PlaygroundPage: React.FC = () => {
               <Zap className="w-3.5 h-3.5 fill-orange-400" />
               <span>{selectedAgent.model_name}</span>
             </div>
-            <p className="text-[10px] text-slate-500">Provider: {selectedAgent.provider} LPU Engine</p>
+            <p className="text-[10px] text-slate-500">Provider: {selectedAgent.provider || 'AI'} Engine</p>
           </div>
         )}
       </div>

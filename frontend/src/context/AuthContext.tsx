@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { User } from '../types';
 import { apiClient } from '../services/apiClient';
 
@@ -9,6 +9,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateGroqKey: (key: string) => Promise<void>;
+  updateOpenRouterKey: (key: string) => Promise<void>;
+  updateApiKeys: (groqKey: string, openrouterKey: string) => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -18,7 +20,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('user_profile');
-    return saved ? JSON.parse(saved) : { id: 'default_user', name: 'Alex Developer', email: 'demo@emergent.ai', is_admin: true, groq_api_key: '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' };
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (!parsed.openrouter_api_key) {
+        parsed.openrouter_api_key = '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';
+      }
+      return parsed;
+    }
+    return {
+      id: 'default_user',
+      name: 'Alex Developer',
+      email: 'demo@emergent.ai',
+      is_admin: true,
+      groq_api_key: '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',
+      openrouter_api_key: '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'
+    };
   });
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('access_token'));
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -60,6 +76,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateOpenRouterKey = async (key: string) => {
+    if (user) {
+      const updatedUser = { ...user, openrouter_api_key: key };
+      setUser(updatedUser);
+      localStorage.setItem('user_profile', JSON.stringify(updatedUser));
+      await apiClient.put('/auth/profile/keys', { openrouter_api_key: key });
+    }
+  };
+
+  const updateApiKeys = async (groqKey: string, openrouterKey: string) => {
+    if (user) {
+      const updatedUser = { ...user, groq_api_key: groqKey, openrouter_api_key: openrouterKey };
+      setUser(updatedUser);
+      localStorage.setItem('user_profile', JSON.stringify(updatedUser));
+      await apiClient.put('/auth/profile/keys', { groq_api_key: groqKey, openrouter_api_key: openrouterKey });
+    }
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -76,6 +110,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         updateGroqKey,
+        updateOpenRouterKey,
+        updateApiKeys,
         isAuthenticated: !!user,
         isLoading
       }}
